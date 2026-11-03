@@ -23,14 +23,14 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
   `//undo`, and `//redo`. `//chunk` selects the entire chunk containing the
   player, across the world's full build height. `//pos1` and `//pos2` accept either the player's
   current block position or three explicit absolute block coordinates, such
-  as `//pos1 10 64 -20`. `//size` reports the selected region dimensions and
+  as `//pos1 10 64 -20`; relative coordinates such as `//pos1 ~ ~5 ~-2`
+  are also supported. `//size` reports the selected region dimensions and
   volume. Commands are restricted to server operators.
   `//set` accepts native Minecraft block-state properties, for example
   `//set oak_log[axis=y]` or `//set oak_stairs[facing=north,half=top]`;
   property names and values are validated against the real block definition.
   Selection positions currently use the player's block position; the wand
-  interaction hook is not implemented yet. Relative (`~`) coordinates and
-  ray-traced targeted-block selection are not implemented yet.
+  interaction hook and ray-traced targeted-block selection are not implemented yet.
 
 ## Known limitations
 

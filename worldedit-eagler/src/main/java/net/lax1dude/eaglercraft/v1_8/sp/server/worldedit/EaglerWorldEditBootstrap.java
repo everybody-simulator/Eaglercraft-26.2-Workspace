@@ -22,7 +22,6 @@ import com.sk89q.worldedit.regions.selector.limit.PermissiveSelectorLimits;
 import com.sk89q.worldedit.session.SessionKey;
 import com.sk89q.worldedit.world.block.BlockState;
 import com.sk89q.worldedit.world.block.BlockType;
-import com.sk89q.worldedit.event.platform.PlatformReadyEvent;
 import com.sk89q.worldedit.event.platform.PlatformsRegisteredEvent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
@@ -107,7 +106,6 @@ public final class EaglerWorldEditBootstrap {
         }
 
         worldEdit.getEventBus().post(new PlatformsRegisteredEvent());
-        worldEdit.getEventBus().post(new PlatformReadyEvent(platform));
         platformInitialized = true;
     }
 

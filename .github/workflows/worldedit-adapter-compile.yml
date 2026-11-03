@@ -5,6 +5,7 @@ on:
     branches:
       - worldedit/adapter-foundation
     paths:
+      - ".github/workflows/worldedit-adapter-compile.yml"
       - "worldedit-eagler/**"
       - "game/**"
       - "build.gradle.kts"

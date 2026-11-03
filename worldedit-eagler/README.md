@@ -1,22 +1,47 @@
 # Eaglercraft WorldEdit adapter
 
-This is the isolated integration module for the real WorldEdit 7.4.0 core API.
+This module integrates the real WorldEdit 7.4.0 core edit engine with the real
+Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
 
-## Implemented source pieces
+## Implemented integration
 
-- `WorldEditCoreApi` verifies the core API boundary and `AbstractWorld` type.
-- `EaglerServerLevelBlockAccess` holds a real Minecraft `ServerLevel`, reads native `BlockState` objects, writes through `Level#setBlock`, checks server-thread ownership, and provides a reversible live-world round-trip probe.
-- `WorldEditBlockStateConverter` maps registered Minecraft block IDs and named state properties to and from WorldEdit's block-state model. It fails explicitly for unknown blocks, missing properties, or unrepresentable values instead of silently dropping state.
+- `EaglerServerLevelBlockAccess` reads and writes native Minecraft
+  `BlockState` objects through the owning `ServerLevel`, enforces server-thread
+  access, validates world bounds, and provides a reversible read/write probe.
+- `WorldEditBlockStateConverter` maps Minecraft block IDs and named state
+  properties to WorldEdit's native block-state model. Unknown or unrepresentable
+  data fails explicitly.
+- `EaglerWorldEditWorld` is a WorldEdit `AbstractWorld` backed by a real
+  `ServerLevel`. WorldEdit's `EditSession` performs the edits; the adapter
+  routes each write into Minecraft's real level.
+- `EaglerWorldEditPlatform` registers the Eaglercraft block/property registry
+  and minimal platform services with WorldEdit core.
+- `EaglerWorldEditBootstrap` installs the command registrar before the
+  integrated server constructs its Brigadier dispatcher. The browser
+  `ServerWorkerHost` explicitly installs it after Minecraft bootstrap.
+- The current command slice is `//pos1`, `//pos2`, `//set <block>`,
+  `//undo`, and `//redo`. Commands are restricted to server operators.
+  Selection positions currently use the player's block position; the wand
+  interaction hook is not implemented yet.
 
-These are source implementations, not a claim that WorldEdit is already usable in-game. The bridge's smoke test has not yet been run inside a live Eaglercraft world, and the module has not yet passed a Gradle compile or TeaVM link.
+## Known limitations
 
-## Remaining integration
+- Block-entity NBT snapshots and placement are rejected. Chests, signs,
+  inventories, and other block entities are not yet safe for copy/paste.
+- `//set` currently accepts a block ID and uses its default state; full
+  WorldEdit pattern/property parsing is not implemented.
+- WorldEdit sessions are in-memory and keyed to player UUIDs. They do not
+  persist across world/server restarts.
+- Entity enumeration/spawning, item drops, biome writes, tree generation,
+  and player interaction hooks are not implemented.
+- The live in-world command path and reversible block round-trip probe still
+  require browser runtime verification. A successful Java compile alone does
+  not prove the TeaVM worker can initialize WorldEdit core or execute edits.
 
-1. Implement `EaglerWorldEditWorld extends AbstractWorld` using the native bridge and converter.
-2. Preserve block-entity NBT and inventory contents for copy/paste and schematics.
-3. Implement biome access, entity operations, and side-effect handling.
-4. Register WorldEdit's actual command dispatcher and platform services with the integrated server.
-5. Connect player selections, sessions, clipboard, undo, and history.
-6. Verify server-worker compilation and browser runtime compatibility before adding WorldEdit to the production worker classpath.
+## Build and runtime verification
 
-The module depends on the real Minecraft implementation in `:game` and the WorldEdit core API only. It does not pull in Bukkit, Fabric, or NeoForge.
+The adapter compile workflow checks `:game:compileJava`,
+`:worldedit-eagler:compileJava`, and `:platform-teavm:compileJava`.
+The standalone browser build additionally links the integrated-server worker
+with the bootstrap reachable. The port is not considered verified until that
+link succeeds and the commands are exercised in a live browser world.

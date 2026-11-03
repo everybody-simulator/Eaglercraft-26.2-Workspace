@@ -152,6 +152,10 @@ public class ServerWorkerHost {
 			net.minecraft.SharedConstants.tryDetectVersion();
 			net.minecraft.server.Bootstrap.bootStrap();
 			logger.info("[ServerWorker] Bootstrap.bootStrap() complete");
+			// Install the real WorldEdit-core platform before the integrated server
+			// constructs its Brigadier command dispatcher.
+			net.lax1dude.eaglercraft.v1_8.sp.server.worldedit.EaglerWorldEditBootstrap.install();
+			logger.info("[ServerWorker] WorldEdit command bridge installed");
 			// 6. mark this realm as the dedicated server worker so supervisorTick binds the
 			//    seam-c EmbeddedChannel bridge (NOT startMemoryChannel) when the world is ready
 			net.lax1dude.eaglercraft.v1_8.sp.server.EaglerIntegratedServerWorker26.enableServerWorkerMode();

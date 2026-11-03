@@ -20,7 +20,8 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
   integrated server constructs its Brigadier dispatcher. The browser
   `ServerWorkerHost` explicitly installs it after Minecraft bootstrap.
 - The current command slice is `//pos1`, `//pos2`, `//set <block>`,
-  `//undo`, and `//redo`. `//pos1` and `//pos2` accept either the player's
+  `//undo`, and `//redo`. `//chunk` selects the entire chunk containing the
+  player, across the world's full build height. `//pos1` and `//pos2` accept either the player's
   current block position or three explicit absolute block coordinates, such
   as `//pos1 10 64 -20`. `//size` reports the selected region dimensions and
   volume. Commands are restricted to server operators.

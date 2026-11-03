@@ -343,8 +343,9 @@ const serverWasm = read("server-worker.wasm");
 const assets = read("assets.epk");
 const soundsPath = path.join(webDir, "sounds.epk");
 const sounds = fs.existsSync(soundsPath) ? fs.readFileSync(soundsPath) : null;
-if (!fs.existsSync(musicSource)) {
-  fail(`missing music EPK at ${musicSource}; build the regular TeaVM web assets first`);
+const musicAvailable = fs.existsSync(musicSource);
+if (withMusic && !musicAvailable) {
+  fail(`--with-music requested, but no music EPK exists at ${musicSource}`);
 }
 const music = withMusic ? fs.readFileSync(musicSource) : null;
 const favicon = fs.readFileSync(path.join(repo, "game", "src", "main", "resources", "pack.png"));
@@ -715,7 +716,7 @@ console.log(`  music.epk:       ${(music ? music.length : 0).toLocaleString()} B
 console.log(`  output HTML:     ${outputBytes.toLocaleString()} B (${(outputBytes / 1_000_000).toFixed(2)} MB)`);
 console.log(`[single-html] wrote ${output}`);
 
-if (withoutMusic) {
+if (withoutMusic && musicAvailable) {
   const musicPack = spawnSync(process.execPath, [
     path.join(repo, "wasm-toolchain", "export-music-resource-pack.js"),
     musicSource,
@@ -723,6 +724,8 @@ if (withoutMusic) {
   ], { cwd: repo, stdio: "inherit" });
   if (musicPack.error) fail(musicPack.error.message);
   if (musicPack.status !== 0) fail(`optional music pack export exited with code ${musicPack.status}`);
+} else if (withoutMusic) {
+  console.log("[single-html] no optional music source supplied; skipping music resource pack");
 }
 
 if (withoutMusic && outputBytes > target && !diagnosticBuild && !fastPackage) {

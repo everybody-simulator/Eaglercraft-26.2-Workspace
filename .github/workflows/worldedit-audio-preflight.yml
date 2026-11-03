@@ -28,4 +28,4 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          ./gradlew :target_lwjgl_desktop:tasks --all --console=plain --no-daemon | grep -i -E 'sound|epk|asset'
+          ./gradlew tasks --all --console=plain --no-daemon | grep -i -E 'sound|epk|asset'

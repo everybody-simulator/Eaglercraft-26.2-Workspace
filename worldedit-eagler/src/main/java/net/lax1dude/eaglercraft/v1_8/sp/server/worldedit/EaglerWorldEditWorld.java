@@ -112,7 +112,7 @@ public final class EaglerWorldEditWorld extends AbstractWorld {
         Objects.requireNonNull(sideEffects, "sideEffects");
 
         final BaseBlock fullBlock = block.toBaseBlock();
-        if (fullBlock.getNbtId() != null) {
+        if (!fullBlock.getNbtId().isEmpty()) {
             throw new UnsupportedOperationException(
                     "Block-entity NBT placement is not implemented yet at " + position
             );

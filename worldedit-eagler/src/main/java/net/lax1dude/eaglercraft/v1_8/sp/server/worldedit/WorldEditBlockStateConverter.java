@@ -60,10 +60,10 @@ public final class WorldEditBlockStateConverter {
         Objects.requireNonNull(worldEditState, "worldEditState");
 
         final Identifier id = Identifier.parse(worldEditState.getBlockType().id());
-        final Block block = BuiltInRegistries.BLOCK.getValue(id);
-        if (block == null) {
+        if (!BuiltInRegistries.BLOCK.containsKey(id)) {
             throw new IllegalArgumentException("Minecraft has no registered block for " + id);
         }
+        final Block block = BuiltInRegistries.BLOCK.getValue(id);
 
         net.minecraft.world.level.block.state.BlockState result = block.defaultBlockState();
         for (Map.Entry<com.sk89q.worldedit.registry.state.Property<?>, Object> entry : worldEditState.getStates().entrySet()) {
@@ -93,6 +93,11 @@ public final class WorldEditBlockStateConverter {
             final String value
     ) {
         final Object parsed = property.getValueFor(value);
+        if (parsed == null) {
+            throw new IllegalArgumentException(
+                    "WorldEdit property " + property.name() + " does not accept value " + value
+            );
+        }
         return state.with(property, parsed);
     }
 

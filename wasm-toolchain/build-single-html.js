@@ -393,8 +393,8 @@ if (withoutMusic) {
 // sound pack is optional for boot; omit its preload and resource-pack entry
 // instead of failing after the expensive precise Wasm links have completed.
 if (!sounds) {
-  html = html.replace(/^\\s*<link rel="preload" href="sounds\\.epk(?:\\?v=[^"]*)?"[^>]*\\/?>\\s*$/gm, "");
-  html = html.replace(/^\\s*\\{\\s*url:\\s*"sounds\\.epk(?:\\?v=[^"]*)?",\\s*path:\\s*""\\s*\\},?\\s*$/gm, "");
+  html = html.replace(/^\s*<link rel="preload" href="sounds\.epk(?:\?v=[^"]*)?"[^>]*\/?>\s*$/gm, "");
+  html = html.replace(/^\s*\{\s*url:\s*"sounds\.epk(?:\?v=[^"]*)?",\s*path:\s*""\s*\},?\s*$/gm, "");
   console.log("[single-html] no sounds.epk supplied; omitting optional sound pack");
 }
 
@@ -429,7 +429,7 @@ ${decoderJs}
   var inlinePayloadCacheBytes = 0;
   var inlinePayloadPrefix = "eagler-inline-payload://";
   var payloadIds = {
-    "assets.epk": "eag-inline-assets"${sounds ? ',\\n    "sounds.epk": "eag-inline-sounds"' : ""}${music ? ',\\n    "music.epk": "eag-inline-music"' : ""}
+    "assets.epk": "eag-inline-assets"${sounds ? ',\n    "sounds.epk": "eag-inline-sounds"' : ""}${music ? ',\n    "music.epk": "eag-inline-music"' : ""}
   };
 
   function decodePayload(id) {

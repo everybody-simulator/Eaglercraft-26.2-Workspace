@@ -162,17 +162,30 @@ public final class EaglerWorldEditBootstrap {
         if (parts.length != 3) {
             throw error("Expected three block coordinates: //pos1 <x> <y> <z>.");
         }
+        final ServerPlayer player = requirePlayer(source);
+        final BlockPos origin = player.blockPosition();
         final int x;
         final int y;
         final int z;
         try {
-            x = Integer.parseInt(parts[0]);
-            y = Integer.parseInt(parts[1]);
-            z = Integer.parseInt(parts[2]);
-        } catch (NumberFormatException exception) {
-            throw error("Coordinates must be whole block numbers (relative ~ coordinates are not supported yet).");
+            x = parseCoordinate(parts[0], origin.getX());
+            y = parseCoordinate(parts[1], origin.getY());
+            z = parseCoordinate(parts[2], origin.getZ());
+        } catch (NumberFormatException | ArithmeticException exception) {
+            throw error("Coordinates must be whole block numbers or relative values such as ~, ~5, or ~-2.");
         }
         return selectPosition(source, primary, new BlockPos(x, y, z));
+    }
+
+    private static int parseCoordinate(final String token, final int origin) {
+        if (token.equals("~")) {
+            return origin;
+        }
+        if (token.startsWith("~")) {
+            final String offset = token.substring(1);
+            return Math.addExact(origin, offset.isEmpty() ? 0 : Integer.parseInt(offset));
+        }
+        return Integer.parseInt(token);
     }
 
     private static int selectPosition(

@@ -21,6 +21,9 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
   `ServerWorkerHost` explicitly installs it after Minecraft bootstrap.
 - The current command slice is `//pos1`, `//pos2`, `//set <block>`,
   `//undo`, and `//redo`. Commands are restricted to server operators.
+  `//set` accepts native Minecraft block-state properties, for example
+  `//set oak_log[axis=y]` or `//set oak_stairs[facing=north,half=top]`;
+  property names and values are validated against the real block definition.
   Selection positions currently use the player's block position; the wand
   interaction hook is not implemented yet.
 
@@ -28,8 +31,9 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
 
 - Block-entity NBT snapshots and placement are rejected. Chests, signs,
   inventories, and other block entities are not yet safe for copy/paste.
-- `//set` currently accepts a block ID and uses its default state; full
-  WorldEdit pattern/property parsing is not implemented.
+- Full WorldEdit pattern expressions (random patterns, gradients, masks,
+  percentages, and pattern composition) are not implemented. `//set` supports
+  one block with explicit native Minecraft state properties.
 - WorldEdit sessions are in-memory and keyed to player UUIDs. They do not
   persist across world/server restarts.
 - Entity enumeration/spawning, item drops, biome writes, tree generation,

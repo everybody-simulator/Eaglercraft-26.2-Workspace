@@ -1,0 +1,31 @@
+name: WorldEdit browser audio packaging preflight
+
+on:
+  push:
+    branches:
+      - worldedit/adapter-foundation
+    paths:
+      - ".github/workflows/worldedit-audio-preflight.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: worldedit/adapter-foundation
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+      - name: Discover audio and EPK tasks
+        shell: bash
+        run: |
+          set -o pipefail
+          ./gradlew :target_lwjgl_desktop:tasks --all --console=plain --no-daemon | grep -i -E 'sound|epk|asset'

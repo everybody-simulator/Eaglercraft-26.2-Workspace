@@ -300,6 +300,9 @@ public class Commands {
          UnpublishCommand.register(this.dispatcher);
       }
 
+      // Server-only WorldEdit bridge; the standalone client leaves it uninstalled.
+      net.lax1dude.eaglercraft.v1_8.sp.server.worldedit.EaglerWorldEditCommandBridge.registerCommands(this.dispatcher);
+
       this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
    }
 

@@ -10,6 +10,7 @@ public final class ServerMainClass {
 
 	public static void main(String[] args) {
 		setStackTraceLimit();
+		net.lax1dude.eaglercraft.v1_8.sp.server.worldedit.EaglerWorldEditBootstrap.install();
 		net.lax1dude.eaglercraft.v1_8.sp.server.internal.teavm.ServerOnlyWorkerMain.workerMain();
 	}
 

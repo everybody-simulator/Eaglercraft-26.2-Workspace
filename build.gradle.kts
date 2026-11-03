@@ -3,6 +3,7 @@ subprojects {
 
 	repositories {
 		maven("https://libraries.minecraft.net")
+		maven("https://maven.enginehub.org/repo/")
 		mavenCentral()
 	}
 

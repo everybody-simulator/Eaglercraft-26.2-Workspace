@@ -61,7 +61,7 @@ jobs:
       - name: Build standalone Minecraft HTML
         run: node wasm-toolchain/build-single-html.js --output worldedit-eaglercraft-26.2.html
         env:
-          EAGLER_BUILD_CAP_MIB: "12288"
+          EAGLER_BUILD_CAP_MIB: "13312"
 
       - name: Upload playable HTML
         uses: actions/upload-artifact@v4

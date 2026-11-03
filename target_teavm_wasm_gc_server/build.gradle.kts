@@ -57,6 +57,7 @@ dependencies {
 	implementation(project(":platform-teavm"))
 	implementation(project(":platform"))
 	implementation(project(":game"))
+	implementation(project(":worldedit-eagler"))
 	implementation(project(":teavm-compat"))
 	if (eaglerSlimFastutilJar != null) {
 		implementation(files(eaglerSlimFastutilJar))

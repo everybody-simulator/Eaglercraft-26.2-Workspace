@@ -21,7 +21,6 @@ on:
       - "gradle.properties"
       - "package.json"
       - "package-lock.json"
-      - ".github/workflows/worldedit-browser-build.yml"
   workflow_dispatch:
 
 permissions:
@@ -58,10 +57,59 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      - name: Restore completed precise Wasm links
+        id: wasm-link-cache
+        uses: actions/cache/restore@v4
+          path: |
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm.link-mode
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm-runtime.js
+            target_teavm_wasm_gc_mesh/build/generated/teavm/wasm-gc/mesh-worker.wasm
+            target_teavm_wasm_gc_mesh/build/generated/teavm/wasm-gc/mesh-worker.wasm.link-mode
+            target_teavm_wasm_gc_server/build/generated/teavm/wasm-gc/server-worker.wasm
+            target_teavm_wasm_gc_server/build/generated/teavm/wasm-gc/server-worker.wasm.link-mode
+          key: worldedit-wasm-precise-${{ runner.os }}-temurin25-${{ hashFiles('build.gradle.kts', 'settings.gradle.kts', 'gradle/**', 'gradle.properties', 'gradlew', 'game/src/main/java/**', 'game/build.gradle.kts', 'platform/src/**', 'platform/build.gradle.kts', 'platform-teavm/src/**', 'platform-teavm/build.gradle.kts', 'teavm-compat/src/**', 'teavm-compat/build.gradle.kts', 'wasm-toolchain/teavm-eagler-patch/**', 'wasm-toolchain/StandaloneTeaVMLinker.java', 'wasm-toolchain/standalone-classpaths.js', 'wasm-toolchain/standalone-link-cache.js', 'wasm-toolchain/link-web-target-standalone.js', 'wasm-toolchain/link-server-standalone.js', 'wasm-toolchain/build-server-fastutil-slice.js', 'wasm-toolchain/run-memory-capped.js', 'target_teavm_wasm_gc/src/**', 'target_teavm_wasm_gc/build.gradle.kts', 'target_teavm_wasm_gc_mesh/src/**', 'target_teavm_wasm_gc_mesh/build.gradle.kts', 'target_teavm_wasm_gc_server/src/**', 'target_teavm_wasm_gc_server/build.gradle.kts') }}
+
+      - name: Build standalone Minecraft HTML from cached precise links
+        if: steps.wasm-link-cache.outputs.cache-hit == 'true'
+        run: node wasm-toolchain/build-single-html.js --reuse-client --reuse-mesh --reuse-server --output worldedit-eaglercraft-26.2.html
+        env:
+          EAGLER_BUILD_CAP_MIB: "13312"
+
       - name: Build standalone Minecraft HTML
+        if: steps.wasm-link-cache.outputs.cache-hit != 'true'
         run: node wasm-toolchain/build-single-html.js --output worldedit-eaglercraft-26.2.html
         env:
           EAGLER_BUILD_CAP_MIB: "13312"
+
+      - name: Verify precise Wasm outputs for cache
+        id: wasm-cache-ready
+        if: always() && steps.wasm-link-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          for artifact in \
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm \
+            target_teavm_wasm_gc_mesh/build/generated/teavm/wasm-gc/mesh-worker.wasm \
+            target_teavm_wasm_gc_server/build/generated/teavm/wasm-gc/server-worker.wasm; do
+            test -s "$artifact"
+            test "$(cat "$artifact.link-mode")" = "precise"
+          done
+          test -s target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm-runtime.js
+
+      - name: Save completed precise Wasm links
+        if: always() && steps.wasm-cache-ready.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm.link-mode
+            target_teavm_wasm_gc/build/generated/teavm/wasm-gc/classes.wasm-runtime.js
+            target_teavm_wasm_gc_mesh/build/generated/teavm/wasm-gc/mesh-worker.wasm
+            target_teavm_wasm_gc_mesh/build/generated/teavm/wasm-gc/mesh-worker.wasm.link-mode
+            target_teavm_wasm_gc_server/build/generated/teavm/wasm-gc/server-worker.wasm
+            target_teavm_wasm_gc_server/build/generated/teavm/wasm-gc/server-worker.wasm.link-mode
+          key: worldedit-wasm-precise-${{ runner.os }}-temurin25-${{ hashFiles('build.gradle.kts', 'settings.gradle.kts', 'gradle/**', 'gradle.properties', 'gradlew', 'game/src/main/java/**', 'game/build.gradle.kts', 'platform/src/**', 'platform/build.gradle.kts', 'platform-teavm/src/**', 'platform-teavm/build.gradle.kts', 'teavm-compat/src/**', 'teavm-compat/build.gradle.kts', 'wasm-toolchain/teavm-eagler-patch/**', 'wasm-toolchain/StandaloneTeaVMLinker.java', 'wasm-toolchain/standalone-classpaths.js', 'wasm-toolchain/standalone-link-cache.js', 'wasm-toolchain/link-web-target-standalone.js', 'wasm-toolchain/link-server-standalone.js', 'wasm-toolchain/build-server-fastutil-slice.js', 'wasm-toolchain/run-memory-capped.js', 'target_teavm_wasm_gc/src/**', 'target_teavm_wasm_gc/build.gradle.kts', 'target_teavm_wasm_gc_mesh/src/**', 'target_teavm_wasm_gc_mesh/build.gradle.kts', 'target_teavm_wasm_gc_server/src/**', 'target_teavm_wasm_gc_server/build.gradle.kts') }}
 
       - name: Upload playable HTML
         uses: actions/upload-artifact@v4

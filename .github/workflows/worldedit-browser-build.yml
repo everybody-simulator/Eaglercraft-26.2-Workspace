@@ -1,0 +1,72 @@
+name: Build WorldEdit browser test client
+
+on:
+  push:
+    branches:
+      - worldedit/adapter-foundation
+    paths:
+      - "game/**"
+      - "platform/**"
+      - "platform-teavm/**"
+      - "teavm-compat/**"
+      - "target_teavm_wasm_gc/**"
+      - "target_teavm_wasm_gc_mesh/**"
+      - "target_teavm_wasm_gc_server/**"
+      - "wasm-toolchain/**"
+      - "worldedit-eagler/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle/**"
+      - "gradlew"
+      - "gradle.properties"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/worldedit-browser-build.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: worldedit-browser-build-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Compile and package standalone browser client
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - name: Check out this branch
+        uses: actions/checkout@v4
+        with:
+          ref: worldedit/adapter-foundation
+
+      - name: Install Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Build standalone Minecraft HTML
+        run: node wasm-toolchain/build-single-html.js --output worldedit-eaglercraft-26.2.html
+        env:
+          EAGLER_BUILD_CAP_MIB: "12288"
+
+      - name: Upload playable HTML
+        uses: actions/upload-artifact@v4
+        with:
+          name: worldedit-eaglercraft-26.2-browser-client
+          path: worldedit-eaglercraft-26.2.html
+          if-no-files-found: error
+          retention-days: 7

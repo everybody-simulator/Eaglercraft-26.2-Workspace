@@ -341,7 +341,8 @@ const meshWasm = read("mesh-worker.wasm");
 // dedicated server image is therefore required for hosted and standalone use.
 const serverWasm = read("server-worker.wasm");
 const assets = read("assets.epk");
-const sounds = read("sounds.epk");
+const soundsPath = path.join(webDir, "sounds.epk");
+const sounds = fs.existsSync(soundsPath) ? fs.readFileSync(soundsPath) : null;
 if (!fs.existsSync(musicSource)) {
   fail(`missing music EPK at ${musicSource}; build the regular TeaVM web assets first`);
 }
@@ -388,6 +389,15 @@ if (withoutMusic) {
   );
 }
 
+// This workspace currently has no separate sounds.epk source artifact. The
+// sound pack is optional for boot; omit its preload and resource-pack entry
+// instead of failing after the expensive precise Wasm links have completed.
+if (!sounds) {
+  html = html.replace(/^\\s*<link rel="preload" href="sounds\\.epk(?:\\?v=[^"]*)?"[^>]*\\/?>\\s*$/gm, "");
+  html = html.replace(/^\\s*\\{\\s*url:\\s*"sounds\\.epk(?:\\?v=[^"]*)?",\\s*path:\\s*""\\s*\\},?\\s*$/gm, "");
+  console.log("[single-html] no sounds.epk supplied; omitting optional sound pack");
+}
+
 html = html.replace(
   'href="favicon.png"',
   `href="data:image/png;base64,${favicon.toString("base64")}"`
@@ -397,10 +407,10 @@ const payloads = [
   payloadTag("eag-inline-decoder", decoderWasm),
   payloadTag("eag-inline-wasm-br", wasmBrotli),
   payloadTag("eag-inline-mesh-wasm-br", meshWasmBrotli),
-  payloadTag("eag-inline-assets", assets),
-  payloadTag("eag-inline-sounds", sounds)
+  payloadTag("eag-inline-assets", assets)
 ];
 payloads.splice(3, 0, payloadTag("eag-inline-server-wasm-br", serverWasmBrotli));
+if (sounds) payloads.push(payloadTag("eag-inline-sounds", sounds));
 if (music) payloads.push(payloadTag("eag-inline-music", music));
 
 const prelude = `
@@ -419,8 +429,7 @@ ${decoderJs}
   var inlinePayloadCacheBytes = 0;
   var inlinePayloadPrefix = "eagler-inline-payload://";
   var payloadIds = {
-    "assets.epk": "eag-inline-assets",
-    "sounds.epk": "eag-inline-sounds"${music ? ',\n    "music.epk": "eag-inline-music"' : ""}
+    "assets.epk": "eag-inline-assets"${sounds ? ',\\n    "sounds.epk": "eag-inline-sounds"' : ""}${music ? ',\\n    "music.epk": "eag-inline-music"' : ""}
   };
 
   function decodePayload(id) {
@@ -701,7 +710,7 @@ console.log(`  Mesh Wasm Brotli:${meshWasmBrotli.length.toLocaleString()} B`);
 console.log(`  Server Wasm raw: ${(serverWasm ? serverWasm.length : 0).toLocaleString()} B${serverWasm ? "" : " (full-image fallback)"}`);
 console.log(`  Server Wasm Br:  ${serverWasmBrotli.length.toLocaleString()} B`);
 console.log(`  assets.epk:      ${assets.length.toLocaleString()} B`);
-console.log(`  sounds.epk:      ${sounds.length.toLocaleString()} B`);
+console.log(`  sounds.epk:      ${sounds ? sounds.length.toLocaleString() + " B" : "omitted (not supplied)"}`);
 console.log(`  music.epk:       ${(music ? music.length : 0).toLocaleString()} B${music ? "" : " (omitted by --without-music)"}`);
 console.log(`  output HTML:     ${outputBytes.toLocaleString()} B (${(outputBytes / 1_000_000).toFixed(2)} MB)`);
 console.log(`[single-html] wrote ${output}`);

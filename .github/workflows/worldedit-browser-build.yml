@@ -116,6 +116,7 @@ jobs:
 
       - name: Save completed precise Wasm links
         if: always() && steps.wasm-cache-ready.outcome == 'success'
+        continue-on-error: true
         uses: actions/cache/save@v4
         with:
           path: |

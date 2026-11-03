@@ -81,6 +81,10 @@ public final class EaglerWorldEditBootstrap {
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> reportSelectionSize(context.getSource())));
 
+        dispatcher.register(net.minecraft.commands.Commands.literal("/chunk")
+                .requires(EaglerWorldEditBootstrap::canUse)
+                .executes(context -> selectCurrentChunk(context.getSource())));
+
         dispatcher.register(net.minecraft.commands.Commands.literal("/set")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .then(net.minecraft.commands.Commands.argument("block", StringArgumentType.greedyString())
@@ -191,6 +195,27 @@ public final class EaglerWorldEditBootstrap {
         source.sendSuccess(
                 () -> Component.literal((primary ? "WorldEdit position 1" : "WorldEdit position 2")
                         + " set to " + position.getX() + ", " + position.getY() + ", " + position.getZ()),
+                false);
+        return 1;
+    }
+
+    private static int selectCurrentChunk(final CommandSourceStack source)
+            throws CommandSyntaxException {
+        final ServerPlayer player = requirePlayer(source);
+        final EaglerWorldEditWorld world = world(source.getLevel());
+        final LocalSession session = session(player);
+        final BlockPos playerPosition = player.blockPosition();
+        final int minX = (playerPosition.getX() >> 4) << 4;
+        final int minZ = (playerPosition.getZ() >> 4) << 4;
+        final BlockVector3 minimum = BlockVector3.at(minX, world.getMinY(), minZ);
+        final BlockVector3 maximum = BlockVector3.at(
+                minX + 15, world.getMaxY() - 1, minZ + 15);
+        final com.sk89q.worldedit.regions.RegionSelector selector = session.getRegionSelector(world);
+        selector.selectPrimary(minimum, PermissiveSelectorLimits.getInstance());
+        selector.selectSecondary(maximum, PermissiveSelectorLimits.getInstance());
+        source.sendSuccess(() -> Component.literal(
+                "WorldEdit selected chunk " + (minX >> 4) + ", " + (minZ >> 4)
+                        + " from Y=" + world.getMinY() + " to Y=" + (world.getMaxY() - 1)),
                 false);
         return 1;
     }

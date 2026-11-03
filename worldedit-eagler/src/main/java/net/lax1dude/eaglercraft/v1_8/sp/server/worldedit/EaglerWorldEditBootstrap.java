@@ -155,18 +155,36 @@ public final class EaglerWorldEditBootstrap {
         if (blockName.isEmpty()) {
             throw error("A block name is required.");
         }
+        final int stateStart = blockName.indexOf('[');
+        final String identifierText = stateStart >= 0 ? blockName.substring(0, stateStart).trim() : blockName;
+        final String propertiesText;
+        if (stateStart >= 0) {
+            if (!blockName.endsWith("]") || stateStart == blockName.length() - 1) {
+                throw error("Invalid block-state properties. Use stone or oak_log[axis=y].");
+            }
+            propertiesText = blockName.substring(stateStart + 1, blockName.length() - 1);
+        } else {
+            propertiesText = "";
+        }
+
         final Identifier blockId;
         try {
-            blockId = Identifier.parse(blockName.indexOf(':') >= 0 ? blockName : "minecraft:" + blockName);
+            blockId = Identifier.parse(identifierText.indexOf(':') >= 0
+                    ? identifierText : "minecraft:" + identifierText);
         } catch (RuntimeException exception) {
-            throw error("Invalid block identifier: " + blockName);
+            throw error("Invalid block identifier: " + identifierText);
         }
         if (!BuiltInRegistries.BLOCK.containsKey(blockId)) {
             throw error("Unknown Minecraft block: " + blockId);
         }
 
         final Block nativeBlock = BuiltInRegistries.BLOCK.getValue(blockId);
-        final net.minecraft.world.level.block.state.BlockState nativeState = nativeBlock.defaultBlockState();
+        final net.minecraft.world.level.block.state.BlockState nativeState;
+        try {
+            nativeState = parseBlockState(nativeBlock, propertiesText);
+        } catch (IllegalArgumentException exception) {
+            throw error(exception.getMessage());
+        }
         final BlockState worldEditState;
         try {
             worldEditState = WorldEditBlockStateConverter.toWorldEdit(nativeState);
@@ -190,6 +208,59 @@ public final class EaglerWorldEditBootstrap {
             editSession.close();
             throw error("WorldEdit edit failed: " + exception.getMessage());
         }
+    }
+
+    /**
+     * Parse Minecraft's canonical block-state property syntax, for example
+     * oak_log[axis=y] or oak_stairs[facing=north,half=top,shape=straight].
+     * Property values are validated against the real 26.2 block definition.
+     */
+    private static net.minecraft.world.level.block.state.BlockState parseBlockState(
+            final Block block,
+            final String propertiesText
+    ) {
+        net.minecraft.world.level.block.state.BlockState state = block.defaultBlockState();
+        if (propertiesText.isEmpty()) {
+            return state;
+        }
+
+        final java.util.Set<String> seen = new java.util.HashSet<>();
+        for (String assignment : propertiesText.split(",", -1)) {
+            final int equals = assignment.indexOf('=');
+            if (equals <= 0 || equals == assignment.length() - 1
+                    || assignment.indexOf('=', equals + 1) >= 0) {
+                throw new IllegalArgumentException("Invalid block-state property: " + assignment);
+            }
+
+            final String propertyName = assignment.substring(0, equals).trim();
+            final String propertyValue = assignment.substring(equals + 1).trim();
+            if (!seen.add(propertyName)) {
+                throw new IllegalArgumentException("Duplicate block-state property: " + propertyName);
+            }
+
+            final net.minecraft.world.level.block.state.properties.Property<?> property =
+                    state.getBlock().getStateDefinition().getProperty(propertyName);
+            if (property == null) {
+                throw new IllegalArgumentException(
+                        "Block " + BuiltInRegistries.BLOCK.getKey(block) + " has no property " + propertyName);
+            }
+            state = applyProperty(state, property, propertyValue);
+        }
+        return state;
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private static net.minecraft.world.level.block.state.BlockState applyProperty(
+            final net.minecraft.world.level.block.state.BlockState state,
+            final net.minecraft.world.level.block.state.properties.Property property,
+            final String value
+    ) {
+        final java.util.Optional parsed = property.getValue(value);
+        if (parsed.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Invalid value '" + value + "' for block-state property " + property.getName());
+        }
+        return state.setValue(property, (Comparable) parsed.get());
     }
 
     private static int undo(final CommandSourceStack source, final boolean redo)

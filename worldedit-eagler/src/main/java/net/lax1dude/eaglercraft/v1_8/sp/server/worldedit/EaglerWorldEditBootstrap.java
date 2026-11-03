@@ -63,11 +63,23 @@ public final class EaglerWorldEditBootstrap {
         ensureWorldEditPlatform();
         dispatcher.register(net.minecraft.commands.Commands.literal("/pos1")
                 .requires(EaglerWorldEditBootstrap::canUse)
-                .executes(context -> selectPosition(context.getSource(), true)));
+                .executes(context -> selectPosition(context.getSource(), true))
+                .then(net.minecraft.commands.Commands.argument("position", StringArgumentType.greedyString())
+                        .executes(context -> selectPosition(
+                                context.getSource(), true,
+                                StringArgumentType.getString(context, "position")))));
 
         dispatcher.register(net.minecraft.commands.Commands.literal("/pos2")
                 .requires(EaglerWorldEditBootstrap::canUse)
-                .executes(context -> selectPosition(context.getSource(), false)));
+                .executes(context -> selectPosition(context.getSource(), false))
+                .then(net.minecraft.commands.Commands.argument("position", StringArgumentType.greedyString())
+                        .executes(context -> selectPosition(
+                                context.getSource(), false,
+                                StringArgumentType.getString(context, "position")))));
+
+        dispatcher.register(net.minecraft.commands.Commands.literal("/size")
+                .requires(EaglerWorldEditBootstrap::canUse)
+                .executes(context -> reportSelectionSize(context.getSource())));
 
         dispatcher.register(net.minecraft.commands.Commands.literal("/set")
                 .requires(EaglerWorldEditBootstrap::canUse)
@@ -134,6 +146,72 @@ public final class EaglerWorldEditBootstrap {
                 () -> Component.literal((primary ? "WorldEdit position 1" : "WorldEdit position 2")
                         + " set to " + position.getX() + ", " + position.getY() + ", " + position.getZ()),
                 false);
+        return 1;
+    }
+
+    private static int selectPosition(
+            final CommandSourceStack source,
+            final boolean primary,
+            final String coordinates
+    ) throws CommandSyntaxException {
+        final String[] parts = coordinates.trim().split("\\s+");
+        if (parts.length != 3) {
+            throw error("Expected three block coordinates: //pos1 <x> <y> <z>.");
+        }
+        final int x;
+        final int y;
+        final int z;
+        try {
+            x = Integer.parseInt(parts[0]);
+            y = Integer.parseInt(parts[1]);
+            z = Integer.parseInt(parts[2]);
+        } catch (NumberFormatException exception) {
+            throw error("Coordinates must be whole block numbers (relative ~ coordinates are not supported yet).");
+        }
+        return selectPosition(source, primary, new BlockPos(x, y, z));
+    }
+
+    private static int selectPosition(
+            final CommandSourceStack source,
+            final boolean primary,
+            final BlockPos nativePosition
+    ) throws CommandSyntaxException {
+        final ServerPlayer player = requirePlayer(source);
+        final EaglerWorldEditWorld world = world(source.getLevel());
+        final LocalSession session = session(player);
+        final BlockVector3 position = BlockVector3.at(
+                nativePosition.getX(), nativePosition.getY(), nativePosition.getZ());
+
+        final com.sk89q.worldedit.regions.RegionSelector selector = session.getRegionSelector(world);
+        if (primary) {
+            selector.selectPrimary(position, PermissiveSelectorLimits.getInstance());
+        } else {
+            selector.selectSecondary(position, PermissiveSelectorLimits.getInstance());
+        }
+        source.sendSuccess(
+                () -> Component.literal((primary ? "WorldEdit position 1" : "WorldEdit position 2")
+                        + " set to " + position.getX() + ", " + position.getY() + ", " + position.getZ()),
+                false);
+        return 1;
+    }
+
+    private static int reportSelectionSize(final CommandSourceStack source)
+            throws CommandSyntaxException {
+        final ServerPlayer player = requirePlayer(source);
+        final Region region;
+        try {
+            region = session(player).getSelection(world(source.getLevel()));
+        } catch (Exception exception) {
+            throw error("Select both corners first with //pos1 and //pos2.");
+        }
+        final BlockVector3 dimensions = region.getDimensions();
+        final int width = dimensions.getBlockX();
+        final int height = dimensions.getBlockY();
+        final int length = dimensions.getBlockZ();
+        final long volume = (long) width * (long) height * (long) length;
+        source.sendSuccess(() -> Component.literal(
+                "WorldEdit selection: " + width + " x " + height + " x " + length
+                        + " (" + volume + " blocks)"), false);
         return 1;
     }
 

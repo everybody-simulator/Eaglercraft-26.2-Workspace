@@ -48,6 +48,8 @@ jobs:
           if (/sounds\.epk/.test(stripped)) throw new Error("Optional sounds reference survived stripping");
           console.log("Packager syntax and missing-sounds fallback passed");
           NODE
+      - name: Validate browser build workflow YAML
+        run: ruby -e 'require "yaml"; YAML.load_file(".github/workflows/worldedit-browser-build.yml", aliases: true); puts "Browser build workflow YAML is valid"'
       - name: Discover audio and EPK tasks
         shell: bash
         run: |

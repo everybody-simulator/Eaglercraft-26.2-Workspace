@@ -8,6 +8,7 @@ on:
       - ".github/workflows/worldedit-adapter-compile.yml"
       - "worldedit-eagler/**"
       - "game/**"
+      - "platform-teavm/**"
       - "build.gradle.kts"
       - "settings.gradle.kts"
       - "gradle/**"
@@ -35,4 +36,4 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
 
       - name: Compile Minecraft game and WorldEdit adapter
-        run: ./gradlew :game:compileJava :worldedit-eagler:compileJava --console=plain --no-daemon
+        run: ./gradlew :game:compileJava :worldedit-eagler:compileJava :platform-teavm:compileJava --console=plain --no-daemon

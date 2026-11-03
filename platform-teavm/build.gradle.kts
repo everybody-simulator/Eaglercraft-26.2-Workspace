@@ -22,6 +22,8 @@ dependencies {
 	// :target_teavm's runtime classpath transitively via :game, so TeaVM
 	// generateJavaScript resolves them for any reachable method.
 	implementation(project(":game"))
+	// WorldEdit is only activated in the integrated-server worker bootstrap.
+	implementation(project(":worldedit-eagler"))
 	// Phase 3.3b: org.lwjgl.* is provided by THIS module's linkage stubs
 	// (src/main/java/org/lwjgl/**) — real LWJGL jars must NOT be on this compile
 	// classpath or javac could prefer the jar classes over the stub sources.

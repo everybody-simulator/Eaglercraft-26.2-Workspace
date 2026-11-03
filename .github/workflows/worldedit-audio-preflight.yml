@@ -34,7 +34,10 @@ jobs:
           for (const required of [
             'if (!sounds)',
             'if (sounds) payloads.push(payloadTag("eag-inline-sounds", sounds));',
-            'omitting optional sound pack'
+            'omitting optional sound pack',
+            'const musicAvailable = fs.existsSync(musicSource);',
+            'if (withoutMusic && musicAvailable)',
+            'no optional music source supplied'
           ]) {
             if (!source.includes(required)) throw new Error("Missing optional-audio handling: " + required);
           }

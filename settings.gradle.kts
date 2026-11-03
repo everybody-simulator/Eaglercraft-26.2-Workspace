@@ -5,6 +5,7 @@ plugins {
 rootProject.name = "eagler-26_2"
 
 include("game")
+include("worldedit-eagler")
 include("platform")
 include("platform-lwjgl")
 include("target_lwjgl_desktop")

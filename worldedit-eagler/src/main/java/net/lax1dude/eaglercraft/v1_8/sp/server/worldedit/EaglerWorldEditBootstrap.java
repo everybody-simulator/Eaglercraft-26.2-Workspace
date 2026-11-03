@@ -1,5 +1,6 @@
 package net.lax1dude.eaglercraft.v1_8.sp.server.worldedit;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Locale;
@@ -20,6 +21,9 @@ import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.selector.limit.PermissiveSelectorLimits;
 import com.sk89q.worldedit.session.SessionKey;
 import com.sk89q.worldedit.world.block.BlockState;
+import com.sk89q.worldedit.world.block.BlockType;
+import com.sk89q.worldedit.event.platform.PlatformReadyEvent;
+import com.sk89q.worldedit.event.platform.PlatformsRegisteredEvent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -43,6 +47,7 @@ public final class EaglerWorldEditBootstrap {
     private static final int MAX_BLOCK_CHANGES_PER_COMMAND = 1_000_000;
     private static final Map<UUID, LocalSession> SESSIONS = new HashMap<>();
     private static final Map<ServerLevel, EaglerWorldEditWorld> WORLDS = new IdentityHashMap<>();
+    private static boolean platformInitialized;
 
     private EaglerWorldEditBootstrap() {
     }
@@ -51,7 +56,12 @@ public final class EaglerWorldEditBootstrap {
         EaglerWorldEditCommandBridge.install(EaglerWorldEditBootstrap::registerCommands);
     }
 
+    static Collection<EaglerWorldEditWorld> loadedWorlds() {
+        return WORLDS.values();
+    }
+
     private static void registerCommands(final CommandDispatcher<CommandSourceStack> dispatcher) {
+        ensureWorldEditPlatform();
         dispatcher.register(net.minecraft.commands.Commands.literal("/pos1")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> selectPosition(context.getSource(), true)));
@@ -74,6 +84,31 @@ public final class EaglerWorldEditBootstrap {
         dispatcher.register(net.minecraft.commands.Commands.literal("/redo")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> undo(context.getSource(), true)));
+    }
+
+
+    private static synchronized void ensureWorldEditPlatform() {
+        if (platformInitialized) {
+            return;
+        }
+
+        final WorldEdit worldEdit = WorldEdit.getInstance();
+        final EaglerWorldEditPlatform platform = new EaglerWorldEditPlatform();
+        worldEdit.getPlatformManager().register(platform);
+
+        // WorldEdit's generated BlockTypes facade reads this registry. Populate
+        // it from Minecraft's real built-in registry before any block state is
+        // converted or an EditSession is created.
+        for (Identifier id : BuiltInRegistries.BLOCK.keySet()) {
+            final String key = id.toString();
+            if (!BlockType.REGISTRY.keySet().contains(key)) {
+                BlockType.REGISTRY.register(key, new BlockType(key));
+            }
+        }
+
+        worldEdit.getEventBus().post(new PlatformsRegisteredEvent());
+        worldEdit.getEventBus().post(new PlatformReadyEvent(platform));
+        platformInitialized = true;
     }
 
     private static boolean canUse(final CommandSourceStack source) {

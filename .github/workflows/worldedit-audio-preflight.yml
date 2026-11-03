@@ -41,11 +41,11 @@ jobs:
           const html = [
             '<link rel="preload" href="sounds.epk?v=build" as="fetch" crossorigin="anonymous" />',
             '            { url: "sounds.epk?v=build", path: "" }'
-          ].join("\\n");
+          ].join("\n");
           const stripped = html
-            .replace(/^\\s*<link rel="preload" href="sounds\\.epk(?:\\?v=[^"]*)?"[^>]*\\/?>\\s*$/gm, "")
-            .replace(/^\\s*\\{\\s*url:\\s*"sounds\\.epk(?:\\?v=[^"]*)?",\\s*path:\\s*""\\s*\\},?\\s*$/gm, "");
-          if (/sounds\\.epk/.test(stripped)) throw new Error("Optional sounds reference survived stripping");
+            .replace(/^\s*<link rel="preload" href="sounds\.epk(?:\?v=[^"]*)?"[^>]*\/?>\s*$/gm, "")
+            .replace(/^\s*\{\s*url:\s*"sounds\.epk(?:\?v=[^"]*)?",\s*path:\s*""\s*\},?\s*$/gm, "");
+          if (/sounds\.epk/.test(stripped)) throw new Error("Optional sounds reference survived stripping");
           console.log("Packager syntax and missing-sounds fallback passed");
           NODE
       - name: Discover audio and EPK tasks

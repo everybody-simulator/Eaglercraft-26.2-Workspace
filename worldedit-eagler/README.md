@@ -20,12 +20,16 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
   integrated server constructs its Brigadier dispatcher. The browser
   `ServerWorkerHost` explicitly installs it after Minecraft bootstrap.
 - The current command slice is `//pos1`, `//pos2`, `//set <block>`,
-  `//undo`, and `//redo`. Commands are restricted to server operators.
+  `//undo`, and `//redo`. `//pos1` and `//pos2` accept either the player's
+  current block position or three explicit absolute block coordinates, such
+  as `//pos1 10 64 -20`. `//size` reports the selected region dimensions and
+  volume. Commands are restricted to server operators.
   `//set` accepts native Minecraft block-state properties, for example
   `//set oak_log[axis=y]` or `//set oak_stairs[facing=north,half=top]`;
   property names and values are validated against the real block definition.
   Selection positions currently use the player's block position; the wand
-  interaction hook is not implemented yet.
+  interaction hook is not implemented yet. Relative (`~`) coordinates and
+  ray-traced targeted-block selection are not implemented yet.
 
 ## Known limitations
 

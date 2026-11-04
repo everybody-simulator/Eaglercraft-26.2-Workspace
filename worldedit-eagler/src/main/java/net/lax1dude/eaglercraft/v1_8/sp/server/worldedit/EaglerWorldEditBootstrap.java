@@ -31,6 +31,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 
 /**
  * Boots a small, genuine WorldEdit-core command bridge inside the integrated
@@ -76,6 +78,14 @@ public final class EaglerWorldEditBootstrap {
                         .executes(context -> selectPosition(
                                 context.getSource(), false,
                                 StringArgumentType.getString(context, "position")))));
+
+        dispatcher.register(net.minecraft.commands.Commands.literal("/hpos1")
+                .requires(EaglerWorldEditBootstrap::canUse)
+                .executes(context -> selectLookPosition(context.getSource(), true)));
+
+        dispatcher.register(net.minecraft.commands.Commands.literal("/hpos2")
+                .requires(EaglerWorldEditBootstrap::canUse)
+                .executes(context -> selectLookPosition(context.getSource(), false)));
 
         dispatcher.register(net.minecraft.commands.Commands.literal("/size")
                 .requires(EaglerWorldEditBootstrap::canUse)
@@ -133,7 +143,6 @@ public final class EaglerWorldEditBootstrap {
     private static int selectPosition(final CommandSourceStack source, final boolean primary)
             throws CommandSyntaxException {
         final ServerPlayer player = requirePlayer(source);
-        final EaglerWorldEditActor actor = actor(player);
         final EaglerWorldEditWorld world = world(source.getLevel());
         final LocalSession session = session(player);
         final BlockPos nativePosition = player.blockPosition();

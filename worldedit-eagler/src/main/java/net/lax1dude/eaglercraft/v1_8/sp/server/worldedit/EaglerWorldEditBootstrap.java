@@ -162,6 +162,17 @@ public final class EaglerWorldEditBootstrap {
         return 1;
     }
 
+    private static int selectLookPosition(final CommandSourceStack source, final boolean primary)
+            throws CommandSyntaxException {
+        final ServerPlayer player = requirePlayer(source);
+        final HitResult hit = player.pick(5.0D, 1.0F, false);
+        if (hit.getType() != HitResult.Type.BLOCK) {
+            throw error("No block is targeted. Aim at a block within five blocks and try again.");
+        }
+        final BlockPos target = ((BlockHitResult) hit).getBlockPos();
+        return selectPosition(source, primary, target);
+    }
+
     private static int selectPosition(
             final CommandSourceStack source,
             final boolean primary,

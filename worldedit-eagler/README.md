@@ -19,8 +19,8 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
 - `EaglerWorldEditBootstrap` installs the command registrar before the
   integrated server constructs its Brigadier dispatcher. The browser
   `ServerWorkerHost` explicitly installs it after Minecraft bootstrap.
-- The current command slice is `//pos1`, `//pos2`, `//set <block>`,
-  `//undo`, and `//redo`. `//chunk` selects the entire chunk containing the
+- The current command slice is `//pos1`, `//pos2`, `//hpos1`, `//hpos2`,
+  `//set <block>`, `//undo`, and `//redo`. `//chunk` selects the entire chunk containing the
   player, across the world's full build height. `//pos1` and `//pos2` accept either the player's
   current block position or three explicit absolute block coordinates, such
   as `//pos1 10 64 -20`; relative coordinates such as `//pos1 ~ ~5 ~-2`

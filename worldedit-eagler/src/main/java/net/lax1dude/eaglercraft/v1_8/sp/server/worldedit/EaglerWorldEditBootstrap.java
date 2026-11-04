@@ -63,7 +63,7 @@ public final class EaglerWorldEditBootstrap {
 
     private static void registerCommands(final CommandDispatcher<CommandSourceStack> dispatcher) {
         ensureWorldEditPlatform();
-        dispatcher.register(net.minecraft.commands.Commands.literal("/pos1")
+        dispatcher.register(net.minecraft.commands.Commands.literal("pos1")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> selectPosition(context.getSource(), true))
                 .then(net.minecraft.commands.Commands.argument("position", StringArgumentType.greedyString())
@@ -71,7 +71,7 @@ public final class EaglerWorldEditBootstrap {
                                 context.getSource(), true,
                                 StringArgumentType.getString(context, "position")))));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/pos2")
+        dispatcher.register(net.minecraft.commands.Commands.literal("pos2")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> selectPosition(context.getSource(), false))
                 .then(net.minecraft.commands.Commands.argument("position", StringArgumentType.greedyString())
@@ -79,34 +79,34 @@ public final class EaglerWorldEditBootstrap {
                                 context.getSource(), false,
                                 StringArgumentType.getString(context, "position")))));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/hpos1")
+        dispatcher.register(net.minecraft.commands.Commands.literal("hpos1")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> selectLookPosition(context.getSource(), true)));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/hpos2")
+        dispatcher.register(net.minecraft.commands.Commands.literal("hpos2")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> selectLookPosition(context.getSource(), false)));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/size")
+        dispatcher.register(net.minecraft.commands.Commands.literal("size")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> reportSelectionSize(context.getSource())));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/chunk")
+        dispatcher.register(net.minecraft.commands.Commands.literal("chunk")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> selectCurrentChunk(context.getSource())));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/set")
+        dispatcher.register(net.minecraft.commands.Commands.literal("set")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .then(net.minecraft.commands.Commands.argument("block", StringArgumentType.greedyString())
                         .executes(context -> setBlocks(
                                 context.getSource(),
                                 StringArgumentType.getString(context, "block")))));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/undo")
+        dispatcher.register(net.minecraft.commands.Commands.literal("undo")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> undo(context.getSource(), false)));
 
-        dispatcher.register(net.minecraft.commands.Commands.literal("/redo")
+        dispatcher.register(net.minecraft.commands.Commands.literal("redo")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> undo(context.getSource(), true)));
     }

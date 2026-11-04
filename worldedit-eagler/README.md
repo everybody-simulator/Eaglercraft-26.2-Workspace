@@ -29,8 +29,8 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
   `//set` accepts native Minecraft block-state properties, for example
   `//set oak_log[axis=y]` or `//set oak_stairs[facing=north,half=top]`;
   property names and values are validated against the real block definition.
-  Selection positions currently use the player's block position; the wand
-  interaction hook and ray-traced targeted-block selection are not implemented yet.
+  The wooden-axe selection wand and automatic click interception are not
+  implemented yet; use `//hpos1` and `//hpos2` for ray-targeted selection.
 
 ## Known limitations
 

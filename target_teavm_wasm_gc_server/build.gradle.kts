@@ -94,6 +94,16 @@ teavm {
 }
 
 val standardWasmGCTask = tasks.named<org.teavm.gradle.tasks.GenerateWasmGCTask>("generateWasmGC").get()
+
+// The standalone server linker consumes an explicit TeaVM classpath. Ensure
+// the adapter's compiled JAR is present there: project dependency metadata
+// resolves WorldEdit's external libraries, but the project output itself was
+// missing from the printed standalone classpath.
+val worldEditAdapterJar = rootProject.file("worldedit-eagler/build/libs/worldedit-eagler.jar")
+tasks.named("generateWasmGC").configure {
+	dependsOn(":worldedit-eagler:jar")
+}
+standardWasmGCTask.classpath.from(worldEditAdapterJar)
 if (eaglerServerGameJar != null) {
 	val slicedClasspath = standardWasmGCTask.classpath.files
 		.filter { it.name != "game.jar" }

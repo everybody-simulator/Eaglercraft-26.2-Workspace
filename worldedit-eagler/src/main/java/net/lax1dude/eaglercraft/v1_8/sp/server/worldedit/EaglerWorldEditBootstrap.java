@@ -147,6 +147,12 @@ public final class EaglerWorldEditBootstrap {
             }
         }
 
+        // Match WorldEdit's own platform bootstrap: after native block types
+        // are registered, initialize its shared block/category registries.
+        // Without this, core parsers and built-in patterns can observe empty
+        // common registries even though the Eagler block IDs exist.
+        com.sk89q.worldedit.registry.CommonRegistries.init();
+
         worldEdit.getEventBus().post(new PlatformsRegisteredEvent());
         platformInitialized = true;
     }

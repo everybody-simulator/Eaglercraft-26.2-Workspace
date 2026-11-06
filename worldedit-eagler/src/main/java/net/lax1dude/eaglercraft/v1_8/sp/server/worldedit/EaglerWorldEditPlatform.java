@@ -117,7 +117,8 @@ final class EaglerWorldEditPlatform extends AbstractPlatform {
 
     @Override
     public Map<Capability, Preference> getCapabilities() {
-        return Map.of(Capability.GAME_HOOKS, Preference.PREFERRED);
+        // The first integration stage has no click/interaction listener yet.
+        return Map.of();
     }
 
     @Override

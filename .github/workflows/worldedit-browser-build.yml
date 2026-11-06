@@ -26,9 +26,11 @@ on:
 permissions:
   contents: read
 
+# Do not cancel a running TeaVM link when another source commit is pushed.
+# GitHub may keep only the newest pending run, but the active build is allowed to finish.
 concurrency:
   group: worldedit-browser-build-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   build:

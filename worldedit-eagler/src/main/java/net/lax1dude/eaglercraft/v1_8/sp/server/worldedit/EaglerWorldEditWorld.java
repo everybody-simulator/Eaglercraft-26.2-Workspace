@@ -82,7 +82,8 @@ public final class EaglerWorldEditWorld extends AbstractWorld {
 
     @Override
     public BlockVector3 getMaximumPoint() {
-        return BlockVector3.at(29999999, getMaxY(), 29999999);
+        // Minecraft's max build height is exclusive; WorldEdit bounds are inclusive.
+        return BlockVector3.at(29999999, getMaxY() - 1, 29999999);
     }
 
     @Override

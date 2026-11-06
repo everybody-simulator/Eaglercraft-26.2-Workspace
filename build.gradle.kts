@@ -4,13 +4,13 @@ subprojects {
 	repositories {
 		maven("https://libraries.minecraft.net")
 		maven("https://maven.enginehub.org/repo/") {
-			// WorldEdit 7.4.0 publishes strict constraints for libraries that
-			// Minecraft already supplies (Gson, Guava, Log4j). Consume its Maven
-			// POM instead of Gradle module metadata so those platform constraints
-			// do not conflict with the workspace's newer Mojang library versions.
+			// WorldEdit publishes Gradle module metadata with strict versions for
+			// libraries already supplied by Minecraft. Use its POM instead, and
+			// ignore the POM marker that redirects Gradle back to that metadata.
 			metadataSources {
 				mavenPom()
 				artifact()
+				ignoreGradleMetadataRedirection()
 			}
 		}
 		mavenCentral()

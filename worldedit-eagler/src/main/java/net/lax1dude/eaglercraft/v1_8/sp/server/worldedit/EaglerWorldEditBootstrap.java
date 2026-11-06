@@ -109,6 +109,22 @@ public final class EaglerWorldEditBootstrap {
         dispatcher.register(net.minecraft.commands.Commands.literal("redo")
                 .requires(EaglerWorldEditBootstrap::canUse)
                 .executes(context -> undo(context.getSource(), true)));
+
+        // Minecraft strips exactly one leading slash before Brigadier parses
+        // chat commands. WorldEdit users type //set, so the parser receives
+        // /set. Register slash-prefixed aliases that redirect to the same
+        // command nodes while retaining the ordinary /set aliases as well.
+        for (String name : new String[] {
+                "pos1", "pos2", "hpos1", "hpos2", "size",
+                "chunk", "set", "undo", "redo"
+        }) {
+            final com.mojang.brigadier.tree.CommandNode<CommandSourceStack> target =
+                    dispatcher.getRoot().getChild(name);
+            if (target == null) {
+                throw new IllegalStateException("WorldEdit command was not registered: " + name);
+            }
+            dispatcher.register(net.minecraft.commands.Commands.literal("/" + name).redirect(target));
+        }
     }
 
 

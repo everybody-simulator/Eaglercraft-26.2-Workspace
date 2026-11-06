@@ -3,7 +3,14 @@ plugins {
 }
 
 repositories {
-    maven("https://maven.enginehub.org/repo/")
+    maven("https://maven.enginehub.org/repo/") {
+        // Ignore Gradle module metadata's strict Minecraft-library constraints.
+        // The workspace already supplies newer compatible Gson/Guava versions.
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
 }
 
 dependencies {

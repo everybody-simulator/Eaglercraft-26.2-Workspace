@@ -4,11 +4,12 @@ plugins {
 
 repositories {
     maven("https://maven.enginehub.org/repo/") {
-        // Ignore Gradle module metadata's strict Minecraft-library constraints.
-        // The workspace already supplies newer compatible Gson/Guava versions.
+        // Ignore the POM marker that otherwise redirects Gradle to WorldEdit's
+        // module metadata and its strict Minecraft-library version constraints.
         metadataSources {
             mavenPom()
             artifact()
+            ignoreGradleMetadataRedirection()
         }
     }
 }

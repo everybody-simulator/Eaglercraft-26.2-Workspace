@@ -52,5 +52,6 @@ Minecraft 26.2 integrated-server world. It is not a parallel block simulation.
 The adapter compile workflow checks `:game:compileJava`,
 `:worldedit-eagler:compileJava`, and `:platform-teavm:compileJava`.
 The standalone browser build additionally links the integrated-server worker
-with the bootstrap reachable. The port is not considered verified until that
-link succeeds and the commands are exercised in a live browser world.
+with the bootstrap reachable. Both workflows run automatically on relevant
+changes to this module. The port is not considered verified until that link
+succeeds and the commands are exercised in a live browser world.

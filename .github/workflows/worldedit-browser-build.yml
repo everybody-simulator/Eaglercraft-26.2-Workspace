@@ -5,6 +5,7 @@ on:
     branches:
       - worldedit/adapter-foundation
     paths:
+      - ".github/workflows/worldedit-browser-build.yml"
       - "game/**"
       - "platform/**"
       - "platform-teavm/**"

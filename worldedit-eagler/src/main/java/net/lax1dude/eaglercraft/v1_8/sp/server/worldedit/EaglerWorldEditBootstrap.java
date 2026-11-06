@@ -147,12 +147,10 @@ public final class EaglerWorldEditBootstrap {
             }
         }
 
-        // Match WorldEdit's own platform bootstrap: after native block types
-        // are registered, initialize its shared block/category registries.
-        // Without this, core parsers and built-in patterns can observe empty
-        // common registries even though the Eagler block IDs exist.
-        com.sk89q.worldedit.registry.CommonRegistries.init();
-
+        // WorldEdit 7.4.0's core artifact does not expose the newer
+        // CommonRegistries bootstrap class. Native block types are registered
+        // above; do not link against a class absent from this pinned API.
+        
         worldEdit.getEventBus().post(new PlatformsRegisteredEvent());
         platformInitialized = true;
     }
@@ -284,10 +282,13 @@ public final class EaglerWorldEditBootstrap {
         } catch (Exception exception) {
             throw error("Select both corners first with //pos1 and //pos2.");
         }
-        final BlockVector3 dimensions = region.getDimensions();
-        final int width = dimensions.getBlockX();
-        final int height = dimensions.getBlockY();
-        final int length = dimensions.getBlockZ();
+        // Region exposes inclusive minimum/maximum points; dimensions are
+        // max - min + 1 on each axis (there is no Region#getDimensions API).
+        final BlockVector3 minimum = region.getMinimumPoint();
+        final BlockVector3 maximum = region.getMaximumPoint();
+        final int width = maximum.getBlockX() - minimum.getBlockX() + 1;
+        final int height = maximum.getBlockY() - minimum.getBlockY() + 1;
+        final int length = maximum.getBlockZ() - minimum.getBlockZ() + 1;
         final long volume = (long) width * (long) height * (long) length;
         source.sendSuccess(() -> Component.literal(
                 "WorldEdit selection: " + width + " x " + height + " x " + length
